@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { X, Copy, Check, Sparkles } from "lucide-react";
 import { api } from "../api/client";
-import { ShortURL, APIErrorEnvelope } from "../types/api";
+import type { ShortURL, APIErrorEnvelope } from "../types/api";
 import { AxiosError } from "axios";
 
 export const CreateLinkModal: React.FC<{

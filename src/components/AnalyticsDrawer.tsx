@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { X, Globe, Smartphone, Compass } from "lucide-react";
 import { api } from "../api/client";
-import { URLAnalytics } from "../types/api";
+import type { URLAnalytics } from "../types/api";
 
 export const AnalyticsDrawer: React.FC<{
   shortCode: string | null;

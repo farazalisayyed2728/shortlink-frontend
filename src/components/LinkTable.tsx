@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { Copy, Check, BarChart2, Trash2, ExternalLink } from "lucide-react";
-import { ShortURL } from "../types/api";
+import type { ShortURL } from "../types/api";
 import { api } from "../api/client";
 
 export const LinkTable: React.FC<{

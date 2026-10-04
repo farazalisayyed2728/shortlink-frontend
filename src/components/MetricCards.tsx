@@ -1,12 +1,10 @@
-interface MetricCardsProps {
-  totalLinks: number;
-  totalClicks: number;
+import type { OverviewMetrics } from "../types/api";
+
+export interface MetricCardsProps {
+  metrics: OverviewMetrics | null;
 }
 
-function MetricCards({
-  totalLinks,
-  totalClicks,
-}: MetricCardsProps) {
+export const MetricCards = ({ metrics }: MetricCardsProps) => {
   return (
     <div className="grid gap-6 sm:grid-cols-2">
       {/* Total Links */}
@@ -16,7 +14,7 @@ function MetricCards({
         </p>
 
         <p className="mt-2 text-3xl font-bold text-slate-900">
-          {totalLinks}
+          {metrics?.total_links ?? 0}
         </p>
 
         <p className="mt-1 text-sm text-slate-500">
@@ -31,7 +29,7 @@ function MetricCards({
         </p>
 
         <p className="mt-2 text-3xl font-bold text-slate-900">
-          {totalClicks}
+          {metrics?.total_clicks ?? 0}
         </p>
 
         <p className="mt-1 text-sm text-slate-500">
@@ -40,6 +38,6 @@ function MetricCards({
       </div>
     </div>
   );
-}
+};
 
 export default MetricCards;
