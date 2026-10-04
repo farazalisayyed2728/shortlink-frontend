@@ -14,17 +14,33 @@ function App() {
   const [totalClicks, setTotalClicks] = useState(0);
 
   useEffect(() => {
-    api
-      .get("/health/")
-      .then((response) => {
-        console.log("Backend response:", response.data);
-        setBackendConnected(true);
-      })
-      .catch((error) => {
-        console.error("Backend error:", error);
-        setBackendConnected(false);
-      });
-  }, []);
+  // Check backend
+  api
+    .get("/health/")
+    .then((response) => {
+      console.log("Backend response:", response.data);
+      setBackendConnected(true);
+    })
+    .catch((error) => {
+      console.error("Backend error:", error);
+      setBackendConnected(false);
+    });
+}, []);
+
+useEffect(() => {
+  if (!isAuthenticated) {
+    return;
+  }
+
+  api
+    .get("/api/analytics/overview/")
+    .then((response) => {
+      console.log("Analytics overview:", response.data);
+    })
+    .catch((error) => {
+      console.error("Analytics overview error:", error);
+    });
+}, [isAuthenticated]);
 
   // Backend is not connected
   if (!backendConnected) {
