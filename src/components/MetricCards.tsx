@@ -14,7 +14,7 @@ export const MetricCards = ({ metrics }: MetricCardsProps) => {
         </p>
 
         <p className="mt-2 text-3xl font-bold text-slate-900">
-          {metrics?.total_links ?? 0}
+          {metrics?.total_urls ?? 0}
         </p>
 
         <p className="mt-1 text-sm text-slate-500">

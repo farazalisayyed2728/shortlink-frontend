@@ -39,11 +39,19 @@ export const CreateLinkModal: React.FC<{
     }
   };
 
-  const handleCopy = () => {
+  const handleCopy = async () => {
     if (!createdLink) return;
-    navigator.clipboard.writeText(createdLink.short_url);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
+    setErrorMsg(null);
+    setCopied(false);
+
+    try {
+      await navigator.clipboard.writeText(createdLink.short_url);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    } catch (error) {
+      console.error("Failed to copy short URL:", error);
+      setErrorMsg("Unable to copy the link. Please copy it manually.");
+    }
   };
 
   const resetAndClose = () => {
@@ -88,6 +96,11 @@ export const CreateLinkModal: React.FC<{
                 {copied ? "Copied" : "Copy"}
               </button>
             </div>
+            {errorMsg && (
+              <p role="alert" className="mt-2 text-xs text-red-600">
+                {errorMsg}
+              </p>
+            )}
             <button
               onClick={resetAndClose}
               className="mt-6 w-full py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-medium rounded-xl text-sm transition"

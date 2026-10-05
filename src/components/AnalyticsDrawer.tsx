@@ -3,24 +3,53 @@ import { X, Globe, Smartphone, Compass } from "lucide-react";
 import { api } from "../api/client";
 import type { URLAnalytics } from "../types/api";
 
+interface AnalyticsResult {
+  shortCode: string;
+  data: URLAnalytics;
+}
+
+interface AnalyticsError {
+  shortCode: string;
+  message: string;
+}
+
 export const AnalyticsDrawer: React.FC<{
   shortCode: string | null;
   onClose: () => void;
 }> = ({ shortCode, onClose }) => {
-  const [data, setData] = useState<URLAnalytics | null>(null);
-  const [loading, setLoading] = useState(false);
+  const [result, setResult] = useState<AnalyticsResult | null>(null);
+  const [requestError, setRequestError] = useState<AnalyticsError | null>(null);
 
   useEffect(() => {
     if (!shortCode) return;
-    setLoading(true);
+
+    const controller = new AbortController();
     api
-      .get<URLAnalytics>(`/api/urls/${shortCode}/analytics/?days=30`)
-      .then((res) => setData(res.data))
-      .catch((err) => console.error(err))
-      .finally(() => setLoading(false));
+      .get<URLAnalytics>(`/api/urls/${shortCode}/analytics/?days=30`, {
+        signal: controller.signal,
+      })
+      .then((res) => setResult({ shortCode, data: res.data }))
+      .catch((err: unknown) => {
+        if (controller.signal.aborted) return;
+        console.error("Failed to load analytics:", err);
+        setRequestError({
+          shortCode,
+          message: "Could not load analytics. Please close the panel and try again.",
+        });
+      });
+
+    return () => controller.abort();
   }, [shortCode]);
 
   if (!shortCode) return null;
+
+  const data = result?.shortCode === shortCode ? result.data : null;
+  const error =
+    requestError?.shortCode === shortCode ? requestError.message : null;
+  const loading = !data && !error;
+  const maxClicks = data
+    ? Math.max(...data.clicks_by_day.map((point) => point.clicks), 1)
+    : 1;
 
   return (
     <div className="fixed inset-0 z-50 flex justify-end bg-slate-900/40 backdrop-blur-xs">
@@ -37,6 +66,10 @@ export const AnalyticsDrawer: React.FC<{
 
         {loading ? (
           <div className="py-24 text-center text-slate-400">Loading telemetry data...</div>
+        ) : error ? (
+          <p role="alert" className="mt-6 rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-700">
+            {error}
+          </p>
         ) : data ? (
           <div className="py-6 space-y-6">
             {/* KPI Badges */}
@@ -62,7 +95,6 @@ export const AnalyticsDrawer: React.FC<{
               ) : (
                 <div className="h-40 flex items-end gap-2 pt-4">
                   {data.clicks_by_day.map((pt) => {
-                    const maxClicks = Math.max(...data.clicks_by_day.map((p) => p.clicks), 1);
                     const heightPercent = (pt.clicks / maxClicks) * 100;
                     return (
                       <div key={pt.date} className="flex-1 flex flex-col items-center group relative">

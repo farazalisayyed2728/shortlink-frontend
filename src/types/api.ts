@@ -9,7 +9,7 @@ export interface ShortURL {
 }
 
 export interface OverviewMetrics {
-  total_links: number;
+  total_urls: number;
   total_clicks: number;
 }
 

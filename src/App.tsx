@@ -1,7 +1,7 @@
-import React, { useState, useEffect } from "react";
+import React, { useCallback, useState, useEffect } from "react";
 import { Plus, Link as LinkIcon, LogOut } from "lucide-react";
 import { api } from "./api/client";
-import { useAuth, AuthProvider } from "./context/AuthContext";
+import { useAuth } from "./context/useAuth";
 import type {
   ShortURL,
   OverviewMetrics,
@@ -28,7 +28,7 @@ const DashboardContent: React.FC = () => {
   const [isRegistering, setIsRegistering] = useState(false);
   const [authError, setAuthError] = useState<string | null>(null);
 
-  const fetchDashboardData = async (page = 1) => {
+  const fetchDashboardData = useCallback(async (page = 1) => {
     if (!isAuthenticated) return;
     try {
       const [overviewRes, linksRes] = await Promise.all([
@@ -42,13 +42,27 @@ const DashboardContent: React.FC = () => {
     } catch (err) {
       console.error("Dashboard fetch failed:", err);
     }
-  };
+  }, [isAuthenticated]);
 
   useEffect(() => {
-    if (isAuthenticated) {
-      fetchDashboardData(currentPage);
-    }
-  }, [isAuthenticated, currentPage]);
+    // This effect synchronizes dashboard data with the authenticated session.
+    // oxlint-disable-next-line react/set-state-in-effect
+    void fetchDashboardData(currentPage);
+  }, [fetchDashboardData, currentPage]);
+
+  useEffect(() => {
+    if (!isAuthenticated) return;
+
+    const refreshWhenVisible = () => {
+      if (document.visibilityState === "visible") {
+        void fetchDashboardData(currentPage);
+      }
+    };
+
+    document.addEventListener("visibilitychange", refreshWhenVisible);
+    return () =>
+      document.removeEventListener("visibilitychange", refreshWhenVisible);
+  }, [currentPage, fetchDashboardData, isAuthenticated]);
 
   const handleAuthSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -176,9 +190,5 @@ const DashboardContent: React.FC = () => {
 };
 
 export default function App() {
-  return (
-    <AuthProvider>
-      <DashboardContent />
-    </AuthProvider>
-  );
+  return <DashboardContent />;
 }

@@ -12,11 +12,20 @@ export const LinkTable: React.FC<{
   onDeleteLink: (code: string) => void;
 }> = ({ links, totalPages, currentPage, onPageChange, onOpenAnalytics, onDeleteLink }) => {
   const [copiedCode, setCopiedCode] = useState<string | null>(null);
+  const [copyErrorCode, setCopyErrorCode] = useState<string | null>(null);
 
-  const handleCopy = (code: string, url: string) => {
-    navigator.clipboard.writeText(url);
-    setCopiedCode(code);
-    setTimeout(() => setCopiedCode(null), 2000);
+  const handleCopy = async (code: string, url: string) => {
+    setCopyErrorCode(null);
+    setCopiedCode(null);
+
+    try {
+      await navigator.clipboard.writeText(url);
+      setCopiedCode(code);
+      setTimeout(() => setCopiedCode(null), 2000);
+    } catch (error) {
+      console.error("Failed to copy short URL:", error);
+      setCopyErrorCode(code);
+    }
   };
 
   const handleDelete = async (code: string) => {
@@ -64,6 +73,11 @@ export const LinkTable: React.FC<{
                         )}
                       </button>
                     </div>
+                    {copyErrorCode === link.short_code && (
+                      <p role="alert" className="mt-1 text-xs text-red-600">
+                        Unable to copy the link. Please copy it manually.
+                      </p>
+                    )}
                   </td>
                   <td className="py-4 px-6 max-w-xs truncate text-slate-500">
                     <a
